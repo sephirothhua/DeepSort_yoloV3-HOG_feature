@@ -1,0 +1,17 @@
+.vscode/
+.git/
+*.o
+*.so
+*.avi
+*.mp4
+*.mov
+*.a
+my_demo
+darknet/backup/*
+darknet/obj/*
+darknet/results/*
+darknet/darknet
+tracker/build/*
+bad.list
+data/*
+
