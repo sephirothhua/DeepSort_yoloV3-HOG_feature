@@ -14,4 +14,7 @@ darknet/darknet
 tracker/build/*
 bad.list
 data/*
+*.png
+*.jpg
+result/*
 

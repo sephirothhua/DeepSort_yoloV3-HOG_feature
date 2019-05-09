@@ -3,6 +3,8 @@
 #include <vector>
 #include "opencv2/opencv.hpp"
 #include "time.h"
+#include "unistd.h"
+#include "sys/stat.h"
 using namespace cv;
 using namespace std;
 
@@ -141,7 +143,7 @@ void draw_lines(Mat frame){
     }
 }
 
-void MyDemo(char *cfgfile, char *weightfile,const char *filename,const char *outfile, int classes,float thresh, float hier_thresh,int fps){
+void MyDemo(char *cfgfile, char *weightfile,const char *filename,const char *outfile, int classes,float thresh, float hier_thresh,int fps,int save){
     image **alphabet = load_alphabet();
     VideoCapture *p;
     p = new VideoCapture(filename);
@@ -152,7 +154,7 @@ void MyDemo(char *cfgfile, char *weightfile,const char *filename,const char *out
     set_batch_network(net, 1);
     // layer l = net->layers[net->n-1];
     float nms=.45;
-    char str[50]={0};
+    // char str[50]={0};
     // vector<Rect> bboxes;
     // DS_Tracker h_tracker=DS_Create(0.2,100,0.7,50,3);
     DS_DetectObjects detect_objects;
@@ -199,7 +201,34 @@ void MyDemo(char *cfgfile, char *weightfile,const char *filename,const char *out
                 else{
                     // sprintf(text,"%d  inside",oloop.track_id);
                     color = cv::Scalar(0, 0, 255);}
+                if(oloop.rect.x<0)
+                {
+                    oloop.rect.x = 0;
+                }
+                if(oloop.rect.y<0)
+                {
+                    oloop.rect.y = 0;
+                }
+                if((oloop.rect.x + oloop.rect.width)>frame.size[1])
+                {
+                    oloop.rect.width = frame.size[1]-oloop.rect.x;
+                }
+                if((oloop.rect.y + oloop.rect.height)>frame.size[0])
+                {
+                    oloop.rect.height = frame.size[0]-oloop.rect.y;
+                }
                 Rect box = Rect(oloop.rect.x,oloop.rect.y,oloop.rect.width,oloop.rect.height);
+                if(save)
+                {
+                    sprintf(text,"result/%d",oloop.track_id);
+                    if(access(text,0)!=0)
+                    {
+                        mkdir(text,0777);
+                    }
+                    sprintf(text,"result/%d/%d_%d.jpg",oloop.track_id,oloop.track_id,frame_id);
+                    Mat ROI = frame(box);
+                    cv::imwrite(text,ROI);
+                }
                 cv::rectangle(frame,box,color,2,1);
                 Point origin = Point(oloop.rect.x,oloop.rect.y-2);
                 // cv::putText(frame, text, origin, font_face, 0.5, color, 1, 8, 0);
@@ -207,7 +236,7 @@ void MyDemo(char *cfgfile, char *weightfile,const char *filename,const char *out
                 for(int i=0;i<(oloop.tracklet.size()-1);i++){
                     cv::line(frame, oloop.tracklet[i],oloop.tracklet[i+1], color, 2);
                     cv::circle(frame, oloop.tracklet[i], 3, color);
-                }
+                    }
                 }
 		}
         // int area_person = Tracker.get_area_count();
@@ -253,6 +282,7 @@ int main(int argc, char* argv[])
     char *weights = argv[2];
     char *video = argv[3];
     char *outfile = find_char_arg(argc, argv, "-out","demo.avi");
+    int  save = find_int_arg(argc, argv, "-save",0);
     int fps = find_int_arg(argc, argv, "-fps",20);
     MyDemo(   cfg
             , weights
@@ -261,7 +291,8 @@ int main(int argc, char* argv[])
             , 1
             , 0.5
             , 0.5
-            , fps);
+            , fps
+            , save);
 
     printf("输入任意字符串结束：%c", getc(NULL));
     return 0;

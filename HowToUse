@@ -1,4 +1,4 @@
 
-./my_demo [cfg] [weights] [test_video] [out_video](optional) [fps](optional)
+./my_demo [cfg] [weights] [test_video] -out [out_video](optional) -fps [fps](optional) -save [save or not](optional)
 
-./my_demo data/hs_datacfg/hs_tiny_2.cfg data/test_model/hs_tiny_2_shanghai_70000.weights data/test_video/demo.mp4 demo.avi 20
+./my_demo data/hs_datacfg/hs_tiny_2.cfg data/test_model/hs_tiny_2_shanghai_70000.weights data/test_video/demo.mp4 -out demo.avi -fps 20 -save 1
